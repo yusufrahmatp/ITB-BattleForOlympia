@@ -4,10 +4,9 @@
 
 int main() {
 
-    // Show main menu
-
     InitializeGame();
     PlayGame();
 
     return 0;
+
 }

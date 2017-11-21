@@ -166,6 +166,8 @@ void AddPlayerWithId(Player player) {
                 trav->prev = new_player_address;
                 if (trav != player_list.first) {
                     trav->prev->next = new_player_address;
+                } else {
+                    player_list.first = new_player_address;
                 }
                 added = true;
             }

@@ -13,12 +13,24 @@ Kata CKata;
 char CString[NMax+1];
 int CInt;
 
+boolean IsAtBlank() {
+
+	return (CC == ' ' || CC == '\n');
+
+}
+
+boolean IsAtEnd() {
+
+	return (CC == EOF);
+
+}
+
 void IgnoreBlank()
 /* Mengabaikan satu atau beberapa BLANK
    I.S. : CC sembarang
    F.S. : CC ≠ BLANK atau CC = MARK */
 {
-	while (CC == BLANK) {
+	while (IsAtBlank()) {
 		ADV();
 	}
 }
@@ -32,7 +44,7 @@ void STARTKATA(char file_name[100])
 	START(file_name);
 	IgnoreBlank();
 
-	if (CC == MARK) {
+	if (IsAtEnd()) {
 		EndKata = true;
 	}
 
@@ -46,12 +58,12 @@ void ADVKATA()
    Proses : Akuisisi kata menggunakan procedure SalinKata */
 {
 	IgnoreBlank();
-	if (CC == MARK) {
+	if (IsAtEnd()) {
 		EndKata = true;
 	} else {
 		SalinKata();
 		IgnoreBlank();
-		if (CC == MARK) {
+		if (IsAtEnd()) {
 			EndKata = true;
 		}
 	}
@@ -66,7 +78,7 @@ void SalinKata()
           Jika panjang kata melebihi NMax, maka sisa kata "dipotong" */
 {
 	CKata.Length = 0;
-	while ((CC != MARK) && (CC != BLANK) && (CKata.Length < NMax)) {
+	while (!IsAtEnd() && !IsAtBlank() && (CKata.Length < NMax)) {
 		CKata.Length ++;
 		CKata.TabKata[CKata.Length] = CC;
 		ADV();

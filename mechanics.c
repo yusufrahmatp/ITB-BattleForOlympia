@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "common_types.h"
 #include "mechanics.h"
+#include "jam.h"
 
 /* Global variables */
 int active_player_id;
@@ -32,20 +34,6 @@ void NewGameData() {
     printf("Enter map column size (min size: 8):\n");
     ask_int_input(&map_width, 8, 100);
 
-    /*/ Map size input
-    do {
-        printf("Map Row Size: ");
-        scanf("%d",&map_height);
-        printf("Map Coloumn Size: ");
-        scanf("%d",&map_width);
-
-        if((map_height < 8) || (map_width < 8)) {
-            printf("Min size 8x8, retry!\n");
-        }
-    }
-    while ((map_height < 8) || (map_width < 8));
-    /*/
-
     // Create and initialize map
     InitializeMap(map_height, map_width);
 
@@ -55,192 +43,138 @@ void NewGameData() {
 }
 
 void LoadGameData() {
+
+    char CString[100];
+
     char file_name[10000];
-    printf("Enter load file name: ");
-    scanf("%s", file_name);
+    print_logo();
+    print_title_plain("Load Game");
+    printf("Enter load file name:\n");
+    ask_input(file_name);
 
-    InitializeFileReader(file_name);
+    // INIT
+    FILE *f = fopen(file_name, "r");
 
-    // #ACTIVE_PLAYER_ID
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    active_player_id = CInt;
-    printf("%d\n", active_player_id);
+    // Read save time
+    fscanf(f, "%s", CString);
+    fscanf(f, "%s", CString);
+    fscanf(f, "%s", CString);
 
-    // #ACTIVE_UNIT_ID
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    active_unit_id = CInt;
-    printf("%d\n", active_unit_id);
+    // Read active player id
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &active_player_id);
 
-    // #MAP
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    map.n_brs_eff = CInt;
-    map_height = map.n_brs_eff;
-    printf("%d\n", map.n_brs_eff);
-    AdvanceInt();
-    map.n_kol_eff = CInt;
-    map_width = map.n_kol_eff;
-    printf("%d\n", map.n_kol_eff);
+    // Read active unit id
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &active_unit_id);
+
+    // Read map
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &map.n_brs_eff);
+
+    fscanf(f, " %d", &map.n_kol_eff);
 
     for (int i = 0; i < map.n_brs_eff; i++) {
         for (int j = 0; j < map.n_kol_eff; j++) {
-            AdvanceString();
-            map.mem[i][j].grid_type = CString[0];
-
-            AdvanceInt();
-            map.mem[i][j].unit_type = CInt;
-
-            AdvanceInt();
-            map.mem[i][j].player_id = CInt;
-
-            AdvanceInt();
-            map.mem[i][j].unit_id = CInt;
-
-            AdvanceInt();
-            map.mem[i][j].unit_player_id = CInt;
-
-            AdvanceInt();
-            map.mem[i][j].visitable = CInt;
+            fscanf(f, " %c %d %d %d %d %c", &(map.mem[i][j].grid_type), &(map.mem[i][j].unit_type), &(map.mem[i][j].player_id), &(map.mem[i][j].unit_id), &(map.mem[i][j].unit_player_id),
+            &(map.mem[i][j].visitable));
         }
     }
 
-    // #MOVE_STACK
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    move_stack.top = CInt - 1;
-    for (int i = 0; i <= move_stack.top; i++) {
-        AdvanceInt();
-        move_stack.T[i].unit_id = CInt;
+    // read move stack
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &(move_stack.top));
+    move_stack.top --;
 
-        AdvanceInt();
-        move_stack.T[i].move_point = CInt;
-
-        AdvanceInt();
-        move_stack.T[i].location.X = CInt;
-
-        AdvanceInt();
-        move_stack.T[i].location.Y = CInt;
-
-        AdvanceInt();
-        move_stack.T[i].map_player_id = CInt;
+    if(move_stack.top != -1) {
+        for (int i = 0; i <= move_stack.top; i++) {
+            fscanf(f, "%d %d %d %d %d", &(move_stack.T[i].unit_id), &(move_stack.T[i].move_point),
+            &(move_stack.T[i].location.X), &(move_stack.T[i].location.Y), &(move_stack.T[i].map_player_id));
+        }
     }
 
-    // #PLAYER
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    int player_count = CInt;
+    // read player
+    int player_count;
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &player_count);
+
     for (int i = 0; i < player_count; i++) {
-        Player cur_player;
+        Player player;
 
-        AdvanceInt();
-        cur_player.id = CInt;
+        fscanf(f, "%d %c %d %d %d %d %d",
+        &(player.id),
+        &(player.alive),
+        &(player.cash),
+        &(player.income),
+        &(player.upkeep),
+        &(player.king_id),
+        &(player.unit_count)
+        );
 
-        AdvanceInt();
-        cur_player.alive = CInt;
-
-        AdvanceInt();
-        cur_player.cash = CInt;
-
-        AdvanceInt();
-        cur_player.income = CInt;
-
-        AdvanceInt();
-        cur_player.upkeep = CInt;
-
-        AdvanceInt();
-        cur_player.king_id = CInt;
-
-        AdvanceInt();
-        cur_player.unit_count = CInt;
-
-        for (int j = 0; j < cur_player.unit_count; j++) {
-            AdvanceInt();
-            cur_player.units[j] = CInt;
+        for (int j = 0; j < player.unit_count; j++) {
+            fscanf(f, "%d", &(player.units[j]));
         }
 
-        AddPlayerWithId(cur_player);
-
+        AddPlayerWithId(player);
     }
 
-    // #UNIT
-    AdvanceString();
-    printf("%s\n", CString);
-    AdvanceInt();
-    int unit_count = CInt;
+    // unit
+    int unit_count;
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d", &unit_count);
+
     for (int i = 0; i < unit_count; i++) {
         Unit unit;
 
-        AdvanceInt();
-        unit.id = CInt;
-
-        AdvanceInt();
-        unit.player_id = CInt;
-
-        AdvanceInt();
-        unit.attack_type = CInt;
-
-        AdvanceInt();
-        unit.type = CInt;
-
-        AdvanceInt();
-        unit.max_health = CInt;
-
-        AdvanceInt();
-        unit.health = CInt;
-
-        AdvanceInt();
-        unit.attack = CInt;
-
-        AdvanceInt();
-        unit.max_move_points = CInt;
-
-        AdvanceInt();
-        unit.move_points = CInt;
-
-        AdvanceInt();
-        unit.can_attack = CInt;
-
-        AdvanceInt();
-        unit.location.X = CInt;
-
-        AdvanceInt();
-        unit.location.Y = CInt;
-
-        AdvanceInt();
-        unit.price = CInt;
-
-        AdvanceInt();
-        unit.heal = CInt;
+        fscanf(f, "%d %d %d %d %d %d %d %d %d %c %d %d %d %d",
+        &(unit.id),
+        &(unit.player_id),
+        &(unit.attack_type),
+        &(unit.type),
+        &(unit.max_health),
+        &(unit.health),
+        &(unit.attack),
+        &(unit.max_move_points),
+        &(unit.move_points),
+        &(unit.can_attack),
+        &(unit.location.X),
+        &(unit.location.Y),
+        &(unit.price),
+        &(unit.heal)
+        );
 
         AddUnitWithId(unit);
-
     }
 
-    // #TURN_QUEUE
-    AdvanceString();
-    printf("%s\n", CString);
+    // Turn Queue
+    fscanf(f, "%s", CString);
+    fscanf(f, " %d %d %d %d",
+    &(turn_queue.T[0]),
+    &(turn_queue.T[1]),
+    &(turn_queue.head),
+    &(turn_queue.tail)
+    );
 
-    AdvanceInt();
-    turn_queue.T[0] = CInt;
+    fclose(f);
 
-    AdvanceInt();
-    turn_queue.T[1] = CInt;
+}
 
-    AdvanceInt();
-    turn_queue.head = CInt;
+JAM GetCurrentTime() {
+    time_t my_time;
+    struct tm * timeinfo;
+    time (&my_time);
+    timeinfo = localtime (&my_time);
 
-    AdvanceInt();
-    turn_queue.tail = CInt;
+    int year = timeinfo->tm_year+1900;
+    int month = timeinfo->tm_mon+1;
+    int day = timeinfo->tm_mday;
+    int hour = timeinfo->tm_hour;
+    int minute = timeinfo->tm_min;
+    int second = timeinfo->tm_sec;
 
-    ADV();
+    JAM now = MakeJAM(year, month, day, hour, minute, second);
 
+    return now;
 }
 
 void SaveGameData() {
@@ -248,19 +182,26 @@ void SaveGameData() {
 	char file_name[100];
 	printf("Enter save file name:\n");
     ask_input(file_name);
+
 	// INIT
 	FILE *f = fopen(file_name, "w+");
 
+    // TIME STAMP
+    JAM time_now = GetCurrentTime();
+    fprintf(f, "#SAVE_TIME \n");
+    fprintf(f, "%d/%d/%d ", time_now.day, time_now.month, time_now.year);
+    fprintf(f, "%d:%d:%d \n\n", time_now.hour, time_now.minute, time_now.second);
+
 	// SAVE ACTIVE PLAYER
-	fprintf(f, "#ACTIVE_PLAYER_ID\n");
+	fprintf(f, "#ACTIVE_PLAYER_ID \n");
 	fprintf(f, "%d \n\n", active_player_id);
 
-	fprintf(f, "#ACTIVE_UNIT_ID\n");
-	fprintf(f, "%d\n\n", active_unit_id);
+	fprintf(f, "#ACTIVE_UNIT_ID \n");
+	fprintf(f, "%d \n\n", active_unit_id);
 
 	// SAVE MAP
-	fprintf(f, "#MAP\n");
-	fprintf(f, "%d %d\n", map.n_brs_eff, map.n_kol_eff);
+	fprintf(f, "#MAP \n");
+	fprintf(f, "%d %d \n", map.n_brs_eff, map.n_kol_eff);
 	for (int i = 0; i < map.n_brs_eff; i++) {
 		for (int j = 0; j < map.n_kol_eff; j++) {
 			fprintf(f, "%c", map.mem[i][j].grid_type);
@@ -268,28 +209,28 @@ void SaveGameData() {
 			fprintf(f, " %d", map.mem[i][j].player_id);
 			fprintf(f, " %d", map.mem[i][j].unit_id);
 			fprintf(f, " %d", map.mem[i][j].unit_player_id);
-			fprintf(f, " %d\n", map.mem[i][j].visitable);
+			fprintf(f, " %d \n", map.mem[i][j].visitable);
 		}
 	}
 	fprintf(f, "\n");
 
 	// SAVE MOVE STACK
-	fprintf(f, "#MOVE_STACK\n");
+	fprintf(f, "#MOVE_STACK \n");
 	int move_stack_count = move_stack.top + 1;
-	fprintf(f, "%d\n", move_stack_count);
+	fprintf(f, "%d \n", move_stack_count);
 	for (int i = 0; i < move_stack_count; i++) {
 		fprintf(f, "%d", move_stack.T[i].unit_id);
 		fprintf(f, " %d", move_stack.T[i].move_point);
 		fprintf(f, " %d", move_stack.T[i].location.X);
 		fprintf(f, " %d", move_stack.T[i].location.Y);
-		fprintf(f, " %d\n", move_stack.T[i].map_player_id);
+		fprintf(f, " %d \n", move_stack.T[i].map_player_id);
 	}
 	fprintf(f, "\n");
 
 	// SAVE PLAYER
-	fprintf(f, "#PLAYER\n");
+	fprintf(f, "#PLAYER \n");
 	int player_count = 2; // masih hardcode
-	fprintf(f, "%d\n", player_count);
+	fprintf(f, "%d \n", player_count);
 	PlayerListElmtAddress cur_player = player_list.first;
 	for (int i = 0; i < player_count; i++) {
 		Player P = cur_player->player;
@@ -303,15 +244,15 @@ void SaveGameData() {
 		for (int j = 0; j < P.unit_count; j++) {
 			fprintf(f, " %d", P.units[j]);
 		}
-		fprintf(f, "\n");
+		fprintf(f, " \n");
 		cur_player = cur_player->next;
 	}
 	fprintf(f, "\n");
 
 	// SAVE UNIT
-	fprintf(f, "#UNIT\n");
+	fprintf(f, "#UNIT \n");
 	int unit_count = GetUnitCount();
-	fprintf(f, "%d\n", unit_count);
+	fprintf(f, "%d \n", unit_count);
 	UnitListElmtAddress cur_unit = unit_list.first;
 	for (int i = 0; i < unit_count; i++) {
         Unit U = cur_unit->unit;;
@@ -328,14 +269,14 @@ void SaveGameData() {
 		fprintf(f, " %d", U.location.X);
 		fprintf(f, " %d", U.location.Y);
 		fprintf(f, " %d", U.price);
-		fprintf(f, " %d\n", U.heal);
+		fprintf(f, " %d \n", U.heal);
 		cur_unit = cur_unit->next;
 	}
 	fprintf(f, "\n");
 
 
 	// SAVE TURN QUEUE
-	fprintf(f, "#TURN_QUEUE\n");
+	fprintf(f, "#TURN_QUEUE \n");
 	fprintf(f, "%d %d %d %d", turn_queue.T[0], turn_queue.T[1], turn_queue.head, turn_queue.tail);
 
 	fclose(f);
@@ -361,13 +302,16 @@ void InitializeGame() {
 
 void PlayGame() {
 
-    do {
+    if (active_player_id == -1) {
+        active_player_id = NextTurn();
+    }
+    active_unit_id = GetPlayer(active_player_id).king_id;
+    PlayTurn();
+    while (!CheckWinner()) {
         active_player_id = NextTurn();
         active_unit_id = GetPlayer(active_player_id).king_id;
         PlayTurn();
-    } while (!CheckWinner());
-
-    // TODO: announce winner
+    }
 
 }
 
@@ -436,8 +380,6 @@ void PlayTurn() {
     UpdateUpkeep();
     UpdateIncome();
     ResetActivePlayerUnitsState();
-
-    // TODO: fungsinya beloma
 
 }
 
@@ -1004,7 +946,7 @@ void ChangeActiveUnit() {
         }
     }
     if(empty) {
-        flash("No units available.");
+        flash("There are no available units.");
     }
     else {
 
@@ -1079,41 +1021,37 @@ void NextActiveUnit() {
     Player current_player = GetPlayer(active_player_id);
     Unit current_unit;
     boolean found = false;
-    int active_player_index = 0;
+    char name[30];
 
-    for (int i = 0; i < current_player.unit_count; i++) {
-        if (current_player.units[i] == current_player.id) {
-            active_player_index = i;
-            break;
-        }
-    }
-
-    for(int i = active_player_index + 1; i < current_player.unit_count; i++) {
+    for(int i = 0; i < current_player.unit_count; i++) {
         current_unit = GetUnit(current_player.units[i]);
-        if (current_unit.can_attack || (current_unit.move_points != 0)) {
+        if (active_unit_id == current_unit.id) {
+            continue;
+        } else if (current_unit.can_attack || (current_unit.move_points != 0)) {
             found = true;
             break;
         }
     }
 
     if (found) {
-        active_player_id = current_unit.id;
+        active_unit_id = current_unit.id;
+
+        switch(current_unit.type) {
+            case KING : strcpy(name, "King");
+                break;
+            case ARCHER : strcpy(name, "Archer");
+                break;
+            case SWORDSMAN : strcpy(name, "Swordsman");
+                break;
+            case WHITE_MAGE : strcpy(name, "White Mage");
+                break;
+        }        
+        char new_flash_message[100];
+        sprintf(new_flash_message, "You are now selecting %s (%d,%d).", name, current_unit.location.X, current_unit.location.Y);
+        flash(new_flash_message);
     }
     else {
-        for(int i = 0; i < active_player_index; i++) {
-            current_unit = GetUnit(current_player.units[i]);
-            if (current_unit.can_attack || (current_unit.move_points != 0)) {
-                found = true;
-                break;
-            }
-        }
-
-        if (found) {
-            active_player_id = current_unit.id;
-        }
-        else {
-            printf("No available unit found\n");
-        }
+        flash("There are no available units.");
     }
 
     // TODO: automatically change active unit to other unit which still has movement points or still able to attack (belom dites)

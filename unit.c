@@ -132,6 +132,8 @@ void AddUnitWithId(Unit unit) {
                 trav->prev = new_unit_address;
                 if (trav != unit_list.first) {
                     trav->prev->next = new_unit_address;
+                } else {
+                    unit_list.first = new_unit_address;
                 }
                 added = true;
             }

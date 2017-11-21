@@ -8,7 +8,6 @@
 #include "mesinkar.h"
 
 #define NMax 50
-#define BLANK ' '
 
 typedef struct {
 	char TabKata[NMax+1]; /* container penyimpan kata, indeks yang dipakai [1..NMax] */
@@ -21,6 +20,10 @@ extern Kata CKata;
 
 extern char CString[NMax+1];
 extern int CInt;
+
+boolean IsAtBlank();
+
+boolean IsAtEnd();
 
 void IgnoreBlank();
 /* Mengabaikan satu atau beberapa BLANK

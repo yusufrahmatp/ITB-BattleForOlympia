@@ -1,5 +1,2 @@
-main: main.c mechanics.c player.c unit.c turn_queue.c move_stack.c point.c pcolor.c print_format.c map.c point_queue.c save.c mesinkar.c mesinkata.c jam.c
-	gcc -o main -Wall -std=c99 main.c mechanics.c player.c unit.c turn_queue.c move_stack.c point.c pcolor.c print_format.c map.c point_queue.c save.c mesinkar.c mesinkata.c jam.c -lm
-
-dbase: dbase.c player.c unit.c castle.c tower.c
-	gcc -o dbase dbase.c player.c unit.c castle.c tower.c -lm
+BattleForOlympia: Main/main.c Gameplay/mechanics.c Player/player.c Unit/unit.c Gameplay/turn_queue.c Gameplay/move_stack.c ADT/point.c UI/pcolor.c UI/print_format.c Map/map.c Gameplay/point_queue.c ADT/mesinkar.c ADT/mesinkata.c ADT/jam.c
+	gcc -o BattleForOlympia -Wall -std=c99 Main/main.c Gameplay/mechanics.c Player/player.c Unit/unit.c Gameplay/turn_queue.c Gameplay/move_stack.c ADT/point.c UI/pcolor.c UI/print_format.c Map/map.c Gameplay/point_queue.c ADT/mesinkar.c ADT/mesinkata.c ADT/jam.c -lm

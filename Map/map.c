@@ -137,7 +137,7 @@ void PrintGridTypeLine(int i) {
 	for(int j = 0; j < map.n_kol_eff; j++) {
 		printf(" ");
 		// TODO: Filter color based on player id
-		if (map.mem[i][j].player_id == 1) {
+		if (map.mem[i][j].player_id == 2) {
 			if ((map.mem[i][j].grid_type && map.mem[i][j].grid_type  == 'C')) {
 				print_const_under_red(emoji_castle);
 				printf(" ");
@@ -150,7 +150,7 @@ void PrintGridTypeLine(int i) {
 				print_const_under_red("  ");
 			}
 			// print_char_blue(((map.mem[i][j].grid_type && map.mem[i][j].grid_type  != 'N') ? map.mem[i][j].grid_type : ' '));
-		} else if (map.mem[i][j].player_id == 2) {
+		} else if (map.mem[i][j].player_id == 1) {
 			if ((map.mem[i][j].grid_type && map.mem[i][j].grid_type  == 'C')) {
 				print_const_under_blue(emoji_castle);
 				printf(" ");

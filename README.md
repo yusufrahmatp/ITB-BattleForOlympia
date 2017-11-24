@@ -1,6 +1,6 @@
 # Battle for Olympia
 
-Battle for OLympia is a turn-based stategy game on a command line interface. The goal of this game is to destroy enemy's kingdom by killing the King who leads all enemy units. A King can recruit army, and the army can be deployed to kill enemy's unit and King. If the King die, then the game finished and all the army left die. This game is a simplified version of an open source Battle of Wesnoth game.
+Battle for Olympia is a turn-based strategy game on a command line interface. The goal of this game is to destroy enemy's kingdom by killing the King who leads all enemy units. A King can recruit army, and the army can be deployed to kill enemy's unit and King. If the King die, then the game finished and all the army left die. This game is a simplified version of an open source Battle of Wesnoth game.
 
 ## Getting Started
 
@@ -42,10 +42,10 @@ and enjoy the game.
 
 * **Abram Perdanaputra Situmorang** - *Initial work* - [abrampers](https://github.com/abrampers)
 * **Ahmad Izzan** - *Initial work* - [ahmadizzan](https://github.com/ahmadizzan)
-* **Dandy Arif Rahman** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Dandy Arif Rahman** - *Initial work*
 * **Faza Fahleraz** - *Initial work* - [ffahleraz](https://github.com/ffahleraz)
-* **M. Sulthan Adhipradhana** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-* **Yusuf Rahmat Pratama** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **M. Sulthan Adhipradhana** - *Initial work*
+* **Yusuf Rahmat Pratama** - *Initial work* - [SoarTheSky](https://github.com/SoarTheSky)
 
 ## Acknowledgments
 

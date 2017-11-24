@@ -127,17 +127,32 @@ void AddUnitWithId(Unit unit) {
         UnitListElmtAddress trav = unit_list.first;
         while (trav != NULL) {
             if (trav->unit.id < unit.id) {
-                new_unit_address->next = trav;
-                new_unit_address->prev = trav->prev;
-                trav->prev = new_unit_address;
-                if (trav != unit_list.first) {
+                // new_unit_address->next = trav;
+                // new_unit_address->prev = trav->prev;
+                // trav->prev = new_unit_address;
+                // if (trav != unit_list.first) {
+                //     trav->prev->next = new_unit_address;
+                // } else {
+                //     unit_list.first = new_unit_address;
+                // }
+                // added = true;
+                trav = trav->next;
+            }
+            else {
+                if(trav == unit_list.first) {
+                    trav->prev = new_unit_address;
+                    new_unit_address->next = trav;
+                }
+                else {
                     trav->prev->next = new_unit_address;
-                } else {
-                    unit_list.first = new_unit_address;
+                    new_unit_address->prev = trav->prev;
+                    trav->prev = new_unit_address;
+                    new_unit_address->next = trav;
                 }
                 added = true;
+                break;
             }
-            trav = trav->next;
+
         }
         if (!added) {
             unit_list.last->next = new_unit_address;

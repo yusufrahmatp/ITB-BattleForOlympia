@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <unistd.h>
 #include "common_types.h"
 #include "mechanics.h"
 #include "jam.h"
@@ -11,6 +12,7 @@ int active_player_id;
 int active_unit_id;
 int map_width;
 int map_height;
+boolean load = false;
 
 /* Game data */
 void NewGameData() {
@@ -54,108 +56,151 @@ void LoadGameData() {
 
     // INIT
     FILE *f = fopen(file_name, "r");
+    if(access( file_name, F_OK ) == -1 ) {
+        // file not exist
+        int input;
+        print_logo();
+        print_title_plain("Load Game");
+        printf("File \"%s\" doesn't exist. Choose command: \n\n", file_name);
+        printf("%s1. Create a new game\n", BOLD);
+        printf("2. Enter other file name\n");
+        printf("3. Exit Game%s\n", NORMAL);
+        ask_int_input(&input,1,3);
 
-    // Read save time
-    fscanf(f, "%s", CString);
-    fscanf(f, "%s", CString);
-    fscanf(f, "%s", CString);
-
-    // Read active player id
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &active_player_id);
-
-    // Read active unit id
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &active_unit_id);
-
-    // Read map
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &map.n_brs_eff);
-
-    fscanf(f, " %d", &map.n_kol_eff);
-
-    for (int i = 0; i < map.n_brs_eff; i++) {
-        for (int j = 0; j < map.n_kol_eff; j++) {
-            fscanf(f, " %c %d %d %d %d %c", &(map.mem[i][j].grid_type), &(map.mem[i][j].unit_type), &(map.mem[i][j].player_id), &(map.mem[i][j].unit_id), &(map.mem[i][j].unit_player_id),
-            &(map.mem[i][j].visitable));
+        switch (input) {
+            case 1 : NewGameData(); break;
+            case 2 : LoadGameData(); break;
+            default : exit(0);
         }
     }
+    else {
+        active_player_id = -1;
+        active_unit_id = -1;
+        EmptyPlayerList();
+        EmptyUnitList();
+        InitializeTurnQueue();
+        InitializeMoveStack();
 
-    // read move stack
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &(move_stack.top));
-    move_stack.top --;
+        // Read save time
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
 
-    if(move_stack.top != -1) {
-        for (int i = 0; i <= move_stack.top; i++) {
-            fscanf(f, "%d %d %d %d %d", &(move_stack.T[i].unit_id), &(move_stack.T[i].move_point),
-            &(move_stack.T[i].location.X), &(move_stack.T[i].location.Y), &(move_stack.T[i].map_player_id));
+        // Read active player id
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &active_player_id);
+
+        // Read active unit id
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &active_unit_id);
+
+        // Read map
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &map.n_brs_eff);
+        map_height = map.n_brs_eff;
+        fscanf(f, " %d", &map.n_kol_eff);
+        map_width = map.n_kol_eff;
+
+        InitializeMap(map_height, map_width);
+        for (int i = 0; i < map.n_brs_eff; i++) {
+            for (int j = 0; j < map.n_kol_eff; j++) {
+                fscanf(f, " %c %d %d %d %d %hhu", &(map.mem[i][j].grid_type), &(map.mem[i][j].unit_type), &(map.mem[i][j].player_id), &(map.mem[i][j].unit_id), &(map.mem[i][j].unit_player_id),
+                &(map.mem[i][j].visitable));
+            }
         }
-    }
+        UpdateMap();
 
-    // read player
-    int player_count;
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &player_count);
+        // read move stack
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &(move_stack.top));
+        move_stack.top --;
+        printf(" %d", (move_stack.top));
 
-    for (int i = 0; i < player_count; i++) {
-        Player player;
+        if(move_stack.top != -1) {
+            for (int i = 0; i <= move_stack.top; i++) {
+                fscanf(f, "%d %d %d %d %d", &(move_stack.T[i].unit_id), &(move_stack.T[i].move_point),
+                &(move_stack.T[i].location.X), &(move_stack.T[i].location.Y), &(move_stack.T[i].map_player_id));
 
-        fscanf(f, "%d %c %d %d %d %d %d",
-        &(player.id),
-        &(player.alive),
-        &(player.cash),
-        &(player.income),
-        &(player.upkeep),
-        &(player.king_id),
-        &(player.unit_count)
+                printf("%d %d %d %d %d", (move_stack.T[i].unit_id), (move_stack.T[i].move_point),
+                (move_stack.T[i].location.X), (move_stack.T[i].location.Y), (move_stack.T[i].map_player_id));
+            }
+        }
+
+        // read player
+        int player_count;
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &player_count);
+
+        for (int i = 0; i < player_count; i++) {
+            Player player;
+
+            fscanf(f, "%d %c %d %d %d %d %d",
+            &(player.id),
+            &(player.alive),
+            &(player.cash),
+            &(player.income),
+            &(player.upkeep),
+            &(player.king_id),
+            &(player.unit_count)
+            );
+
+            for (int j = 0; j < player.unit_count; j++) {
+                fscanf(f, "%d", &(player.units[j]));
+            }
+
+            AddPlayerWithId(player);
+        }
+
+        // unit
+        int unit_count;
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d", &unit_count);
+
+        for (int i = 0; i < unit_count; i++) {
+            Unit unit;
+
+            fscanf(f, "%d %d %d %d %d %d %d %d %d %hhu %d %d %d %d",
+            &(unit.id),
+            &(unit.player_id),
+            &(unit.attack_type),
+            &(unit.type),
+            &(unit.max_health),
+            &(unit.health),
+            &(unit.attack),
+            &(unit.max_move_points),
+            &(unit.move_points),
+            &(unit.can_attack),
+            &(unit.location.X),
+            &(unit.location.Y),
+            &(unit.price),
+            &(unit.heal)
+            );
+
+            AddUnitWithId(unit);
+        }
+
+        // Turn Queue
+        fscanf(f, "%s", CString);
+        printf("%s\n", CString);
+        fscanf(f, " %d %d %d %d",
+        &(turn_queue.T[0]),
+        &(turn_queue.T[1]),
+        &(turn_queue.head),
+        &(turn_queue.tail)
         );
 
-        for (int j = 0; j < player.unit_count; j++) {
-            fscanf(f, "%d", &(player.units[j]));
-        }
-
-        AddPlayerWithId(player);
+        fclose(f);
+        load = true;
     }
-
-    // unit
-    int unit_count;
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d", &unit_count);
-
-    for (int i = 0; i < unit_count; i++) {
-        Unit unit;
-
-        fscanf(f, "%d %d %d %d %d %d %d %d %d %c %d %d %d %d",
-        &(unit.id),
-        &(unit.player_id),
-        &(unit.attack_type),
-        &(unit.type),
-        &(unit.max_health),
-        &(unit.health),
-        &(unit.attack),
-        &(unit.max_move_points),
-        &(unit.move_points),
-        &(unit.can_attack),
-        &(unit.location.X),
-        &(unit.location.Y),
-        &(unit.price),
-        &(unit.heal)
-        );
-
-        AddUnitWithId(unit);
-    }
-
-    // Turn Queue
-    fscanf(f, "%s", CString);
-    fscanf(f, " %d %d %d %d",
-    &(turn_queue.T[0]),
-    &(turn_queue.T[1]),
-    &(turn_queue.head),
-    &(turn_queue.tail)
-    );
-
-    fclose(f);
 
 }
 
@@ -177,12 +222,30 @@ JAM GetCurrentTime() {
     return now;
 }
 
-void SaveGameData() {
+int SaveGameData() {
 
 	char file_name[100];
 	printf("Enter save file name:\n");
     ask_input(file_name);
+    char input[10];
 
+
+    if(access( file_name, F_OK ) != -1 ) {
+        // file exists
+        print_default();
+        print_title("Save Game");
+        printf("A file named %s already exists. Do you want to overwrite? %s(Y/N)%s\n", file_name, BOLD, NORMAL);
+        ask_input(input);
+        if(strcmp(input, "Y") == 0) {
+            int ret = remove(file_name);
+            if(ret != 0) {
+                return ret;
+            }
+        }
+        else {
+            return 999;
+        }
+    }
 	// INIT
 	FILE *f = fopen(file_name, "w+");
 
@@ -280,6 +343,7 @@ void SaveGameData() {
 	fprintf(f, "%d %d %d %d", turn_queue.T[0], turn_queue.T[1], turn_queue.head, turn_queue.tail);
 
 	fclose(f);
+    return 0;
 }
 
 /* Game flow */
@@ -319,7 +383,10 @@ void PlayTurn() {
 
     WhiteMageEffect();
     HealByVillage();
-    ResetMoveStack();
+    if(!load) {
+        ResetMoveStack();
+    }
+    load = false;
 
     Player cur_player = GetPlayer(active_player_id);
     cur_player.cash += cur_player.income - cur_player.upkeep;
@@ -422,8 +489,16 @@ void SaveGame() {
 
     print_default();
     print_title("Save Game");
-    SaveGameData();
-    flash("Game saved!");
+    int ret = SaveGameData();
+    if(!ret) {
+        flash("Game saved!");
+    }
+    else if (ret == 999) {
+        flash("Save cancelled.");
+    }
+    else {
+        flash("Save failed.");
+    }
 
 }
 
@@ -1045,7 +1120,7 @@ void NextActiveUnit() {
                 break;
             case WHITE_MAGE : strcpy(name, "White Mage");
                 break;
-        }        
+        }
         char new_flash_message[100];
         sprintf(new_flash_message, "You are now selecting %s (%d,%d).", name, current_unit.location.X, current_unit.location.Y);
         flash(new_flash_message);

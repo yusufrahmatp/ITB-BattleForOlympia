@@ -161,17 +161,31 @@ void AddPlayerWithId(Player player) {
         PlayerListElmtAddress trav = player_list.first;
         while (trav != NULL) {
             if (trav->player.id < player.id) {
-                new_player_address->next = trav;
-                new_player_address->prev = trav->prev;
-                trav->prev = new_player_address;
-                if (trav != player_list.first) {
+                // new_player_address->next = trav;
+                // new_player_address->prev = trav->prev;
+                // trav->prev = new_player_address;
+                // if (trav != player_list.first) {
+                //     trav->prev->next = new_player_address;
+                // } else {
+                //     player_list.first = new_player_address;
+                // }
+                // added = true;
+                trav = trav->next;
+            }
+            else {
+                if(trav == player_list.first) {
+                    trav->prev = new_player_address;
+                    new_player_address->next = trav;
+                }
+                else {
                     trav->prev->next = new_player_address;
-                } else {
-                    player_list.first = new_player_address;
+                    new_player_address->prev = trav->prev;
+                    trav->prev = new_player_address;
+                    new_player_address->next = trav;
                 }
                 added = true;
+                break;
             }
-            trav = trav->next;
         }
         if (!added) {
             player_list.last->next = new_player_address;

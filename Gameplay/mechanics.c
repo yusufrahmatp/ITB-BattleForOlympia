@@ -141,7 +141,7 @@ void LoadGameData() {
         for (int i = 0; i < player_count; i++) {
             Player player;
 
-            fscanf(f, "%d %c %d %d %d %d %d",
+            fscanf(f, "%d %hhu %d %d %d %d %d",
             &(player.id),
             &(player.alive),
             &(player.cash),
@@ -221,7 +221,7 @@ JAM GetCurrentTime() {
     return now;
 }
 
-int SaveGameData() {
+int SaveGameData(boolean exit) {
 
 	char file_name[100], file_dir[1000];
 	printf("Enter save file name:\n");
@@ -232,12 +232,20 @@ int SaveGameData() {
 
     if(access( file_dir, F_OK ) != -1 ) {
         // file exists
-        print_default();
-        print_title("Save Game");
+        if(!exit) {
+            print_default();
+            print_title("Save Game");
+        }
+        else {
+            print_heading_vcentered("Exit Game");
+            printf("\n");
+            print_title("Save Game");
+        }
         printf("A file named %s already exists. Do you want to overwrite? %s(Y/N)%s\n", file_name, BOLD, NORMAL);
         ask_input(input);
-        if(strcmp(input, "Y") == 0) {
-            int ret = remove(file_name);
+
+        if((strcmp(input, "Y") == 0) || (strcmp(input, "y") == 0)) {
+            int ret = remove(file_dir);
             if(ret != 0) {
                 return ret;
             }
@@ -463,7 +471,30 @@ void ExitGame() {
             print_heading_vcentered("Exit Game");
             printf("\n");
             print_title("Save Game");
-            SaveGameData();
+            int ret = SaveGameData(true);
+            if(ret != 0) {
+                if (ret == 999) {
+                    print_heading_vcentered("Exit Game");
+                    printf("\n");
+                    print_title("Save Cancelled. Exit Without Saving?");
+                }
+                else {
+                    print_heading_vcentered("Exit Game");
+                    printf("\n");
+                    print_title("Save Failed. Exit Without Saving?");
+                }
+                print_centered("1. Exit Game            2. Back to Menu");
+                ask_int_input(&input, 1, 2);
+                if (input == 2) {
+                    ExitGame();
+                    return;
+                }
+            }
+            else {
+                clearscr();
+                printf("File Saved!\n");
+                exit(0);
+            }
         }
         clearscr();
         exit(0);
@@ -489,7 +520,7 @@ void SaveGame() {
 
     print_default();
     print_title("Save Game");
-    int ret = SaveGameData();
+    int ret = SaveGameData(false);
     if(!ret) {
         flash("Game saved!");
     }

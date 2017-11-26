@@ -17,7 +17,7 @@ void NewGameData();
 /* Me-load data game dari file eksternal */
 void LoadGameData();
 /* Men-save data game ke file eksternal */
-int SaveGameData();
+int SaveGameData(boolean exit);
 
 /* Game flow */
 /* Menginisialisasi game: menjalankan NewGameData atau LoadGameData */

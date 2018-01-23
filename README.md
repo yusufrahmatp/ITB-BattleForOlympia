@@ -45,7 +45,7 @@ and enjoy the game.
 * **Dandy Arif Rahman** - *Initial work*
 * **Faza Fahleraz** - *Initial work* - [ffahleraz](https://github.com/ffahleraz)
 * **M. Sulthan Adhipradhana** - *Initial work*
-* **Yusuf Rahmat Pratama** - *Initial work* - [SoarTheSky](https://github.com/SoarTheSky)
+* **Yusuf Rahmat Pratama** - *Initial work* - [yusufrahmatp](https://github.com/yusufrahmatp)
 
 ## Acknowledgments
 
